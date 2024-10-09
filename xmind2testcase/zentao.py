@@ -18,7 +18,8 @@ def xmind_to_zentao_csv_file(xmind_file):
     logging.info('Start converting XMind file(%s) to zentao file...', xmind_file)
     testcases = get_xmind_testcase_list(xmind_file)
 
-    fileheader = ["ID", "用例名称", "所属模块", "标签", "前置条件", "备注", "步骤描述", "预期结果", "编辑模式", "用例等级",
+    fileheader = ["ID", "用例名称", "所属模块", "标签", "前置条件", "备注", "步骤描述", "预期结果", "编辑模式",
+                  "用例等级",
                   "责任人", "用例状态"]
     zentao_testcase_rows = [fileheader]
     for testcase in testcases:
@@ -37,6 +38,14 @@ def xmind_to_zentao_csv_file(xmind_file):
         logging.info('Convert XMind file(%s) to a zentao csv file(%s) successfully!', xmind_file, zentao_file)
 
     return zentao_file
+
+
+def csv_2_metersphere(csv_file):
+    from Utils.Excelize import csv_2_excel, ReadExcel
+    out = csv_2_excel(csv_file)
+    po = ReadExcel(out)
+    po.hide_column(['A', 'D', 'F', 'I', 'L', 'K'])
+    po.save()
 
 
 def gen_a_testcase_row(testcase_dict):
