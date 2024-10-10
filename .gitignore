@@ -15,3 +15,5 @@ __pycache__
 *data.db3
 *running.log
 *uploads
+/xmind2testcase/metersphere.py
+/output.xlsx

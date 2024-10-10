@@ -11,9 +11,11 @@ config = {'sep': ' ',
           'ignore_char': '#!！'
           }
 """
-preconditions: xmind中的F4  备注信息
-summary:xmind中的批注信息
+preconditions: xmind中的F4  备注信息  note
+summary:xmind中的批注信息   comment
+两者都要添加到topic里头，而非块上
 都可以做到父节点拼接子节点
+'3.6.0>'  会以' > '为拼接用例名的 sep
 """
 # Todo 为什么summary没有获得父节点的summary
 
@@ -147,6 +149,7 @@ def parse_a_testcase(case_dict, parent):
     step_dict_list = case_dict.get('topics', [])
     if step_dict_list:
         testcase.steps = parse_test_steps(step_dict_list)
+    print(testcase.steps)
 
     # the result of the testcase take precedence over the result of the teststep
     testcase.result = get_test_result(case_dict['markers'])
@@ -197,7 +200,6 @@ def gen_testcase_title(topics):
     separator = config['sep']
     if separator != ' ':
         separator = f' {separator} '
-    print(titles)
     return separator.join(titles)
 
 
@@ -220,7 +222,6 @@ def parse_test_steps(step_dict_list):
         test_step = parse_a_test_step(step_dict)
         test_step.step_number = step_num
         steps.append(test_step)
-
     return steps
 
 

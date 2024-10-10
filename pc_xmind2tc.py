@@ -11,7 +11,7 @@ from xmind2testcase.utils import get_xmind_testcase_list
 # TODO  Xmind8中的  link怎么用上
 
 def main():
-    xmind_file = './tempFiles/testcases_bak.xmind'
+    xmind_file = './tempFiles/testcases1.xmind'
     print('Start to convert XMind file: %s' % xmind_file)
 
     zentao_csv_file = xmind_to_zentao_csv_file(xmind_file)

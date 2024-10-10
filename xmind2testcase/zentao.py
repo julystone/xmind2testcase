@@ -51,17 +51,17 @@ def csv_2_metersphere(csv_file):
 def gen_a_testcase_row(testcase_dict):
     """
     {
-        "name": "用例名称",
+        "name": "设置相关 - 默认值：旧版",
+        "product": "3.7.0",
+        "suite": "证券风格"
         "version": 1,
-        "summary": "用例概览",
-        "preconditions": "前置条件",
+        "summary": "外层备注\n----\n内层备注",
+        "preconditions": "外层前置条件\n----\n内层前置条件",
         "execution_type": 1,
-        "importance": 3,
+        "importance": 2,
         "estimated_exec_duration": 3,
         "status": 7,
         "result": 0,
-        "product": "证券风格测试用例",
-        "suite": "3.7.0"
         "steps": [
             {
                 "step_number": 1,
@@ -84,8 +84,8 @@ def gen_a_testcase_row(testcase_dict):
     case_title = testcase_dict['name']
     case_module = gen_case_module(testcase_dict['product'], testcase_dict['suite'])
     case_tag = ''
-    case_preconditions = testcase_dict['preconditions']
-    case_note = testcase_dict['summary']
+    case_preconditions = testcase_dict['preconditions']  # 前置条件
+    case_note = testcase_dict['summary']  # 备注
     case_step, case_expected_result = gen_case_step_and_expected_result(testcase_dict['steps'])
     case_edit_type = 'STEP'
     case_priority = gen_case_priority(testcase_dict['importance'])
@@ -110,6 +110,9 @@ def gen_case_step_and_expected_result(steps):
         case_expected_result += str(step_dict['step_number']) + '. ' + \
                                 step_dict['expectedresults'].replace('\n', '').strip() + '\n' \
             if step_dict.get('expectedresults', '') else ''
+    # 去除最后的空行
+    case_step = case_step[:-1]
+    case_expected_result = case_expected_result[:-1]
 
     return case_step, case_expected_result
 

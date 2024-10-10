@@ -40,10 +40,9 @@ def csv_2_excel(csv_path):
         reader = csv.reader(f)
         for row in reader:
             ws.append(row)
-    print(ws.column_dimensions.worksheet)
     width_auto_fit(ws)
     use_style(ws)
-
+    # TODO 函数整理
     wb.save('output.xlsx')
     return 'output.xlsx'
 
