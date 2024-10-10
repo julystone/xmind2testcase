@@ -7,6 +7,9 @@ from xmind2testcase.zentao import xmind_to_zentao_csv_file, csv_2_metersphere
 from xmind2testcase.utils import get_xmind_testcase_list
 
 
+# TODO  Xmind8中的  summary怎么用上 - finish
+# TODO  Xmind8中的  link怎么用上
+
 def main():
     xmind_file = './tempFiles/testcases_bak.xmind'
     print('Start to convert XMind file: %s' % xmind_file)

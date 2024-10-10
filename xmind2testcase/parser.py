@@ -10,7 +10,12 @@ config = {'sep': ' ',
           'summary_sep': '\n----\n',
           'ignore_char': '#!！'
           }
-
+"""
+preconditions: xmind中的F4  备注信息
+summary:xmind中的批注信息
+都可以做到父节点拼接子节点
+"""
+# Todo 为什么summary没有获得父节点的summary
 
 def xmind_to_testsuites(xmind_content_dict):
     """convert xmind file to `xmind2testcase.metadata.TestSuite` list"""
@@ -135,7 +140,7 @@ def parse_a_testcase(case_dict, parent):
     testcase.preconditions = preconditions if preconditions else '无'
 
     summary = gen_testcase_summary(topics)
-    testcase.summary = summary if summary else testcase.name
+    testcase.summary = summary if summary else '无'
     testcase.execution_type = get_execution_type(topics)
     testcase.importance = get_priority(case_dict) or 2
 
@@ -191,8 +196,8 @@ def gen_testcase_title(topics):
     # when separator is not blank, will add space around separator, e.g. '/' will be changed to ' / '
     separator = config['sep']
     if separator != ' ':
-        separator = ' {} '.format(separator)
-
+        separator = f' {separator} '
+    print(titles)
     return separator.join(titles)
 
 

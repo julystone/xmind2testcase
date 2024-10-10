@@ -49,18 +49,49 @@ def csv_2_metersphere(csv_file):
 
 
 def gen_a_testcase_row(testcase_dict):
+    """
+    {
+        "name": "用例名称",
+        "version": 1,
+        "summary": "用例概览",
+        "preconditions": "前置条件",
+        "execution_type": 1,
+        "importance": 3,
+        "estimated_exec_duration": 3,
+        "status": 7,
+        "result": 0,
+        "product": "证券风格测试用例",
+        "suite": "3.7.0"
+        "steps": [
+            {
+                "step_number": 1,
+                "actions": "进入设置界面",
+                "expectedresults": "",
+                "execution_type": 1,
+                "result": 0
+            },
+            {
+                "step_number": 2,
+                "actions": "观察证券风格设置开关",
+                "expectedresults": "默认旧版风格",
+                "execution_type": 1,
+                "result": 0
+            }
+        ],
+    },
+    """
     case_id = ""
     case_title = testcase_dict['name']
     case_module = gen_case_module(testcase_dict['product'], testcase_dict['suite'])
     case_tag = ''
     case_preconditions = testcase_dict['preconditions']
-    case_note = ''
+    case_note = testcase_dict['summary']
     case_step, case_expected_result = gen_case_step_and_expected_result(testcase_dict['steps'])
     case_edit_type = 'STEP'
     case_priority = gen_case_priority(testcase_dict['importance'])
     case_owner = 'july'
     case_status = 'Prepare'
-    case_type = gen_case_type(testcase_dict['execution_type'])
+    case_execution_type = gen_case_execution_type(testcase_dict['execution_type'])
     row = [case_id, case_title, case_module, case_tag, case_preconditions, case_note, case_step, case_expected_result,
            case_edit_type, case_priority, case_owner, case_status]
     return row
@@ -91,7 +122,7 @@ def gen_case_priority(priority):
         return 'P2'
 
 
-def gen_case_type(case_type):
+def gen_case_execution_type(case_type):
     mapping = {1: 'manual', 2: 'automatic'}
     if case_type in mapping.keys():
         return mapping[case_type]
