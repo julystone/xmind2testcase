@@ -1,56 +1,69 @@
-"""
-封装一个读取用例的excel类
-# 实现读取用例数据
-# 实现写入数据的功能
-"""
+import csv
 import re
-import time
-from typing import Any
-from pydantic import BaseModel, ConfigDict
+from typing import Any, List
 
 import openpyxl
+from openpyxl.styles import Alignment, Font
+from pydantic import BaseModel, Field
 
 
 class Case:
     def __repr__(self):
-        string = '\n In __repr__：'
-        string += '\n' + repr(self.__dict__)
-        return string
+        return f"\n In __repr__：\n{repr(self.__dict__)}"
 
 
 class SheetFoo(BaseModel):
-    sheet_list: list
-    selected_sheet: Any
-    max_row: int
-    max_column: int
+    sheet_list: List[str] = Field(default_factory=list)
+    selected_sheet: Any = None
+    max_row: int = 0
+    max_column: int = 0
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    class Config:
+        arbitrary_types_allowed = True
+
+    def update_sheet_properties(self):
+        """
+        更新表格的最大行和最大列属性
+        """
+        if self.selected_sheet is not None:
+            try:
+                self.max_row = self.selected_sheet.max_row
+                self.max_column = self.selected_sheet.max_column
+            except AttributeError as e:
+                print(f"更新表格属性时出现错误：{e}")
 
 
-def csv_2_excel(csv_path):
+def csv_2_excel(csv_path: str, output_path: str = 'output.xlsx') -> str:
     """
     将csv文件转换为excel文件
-    :param csv_path:
-    :return:
+    :param csv_path: 输入的csv文件路径
+    :param output_path: 输出的excel文件路径，默认为 output.xlsx
+    :return: 输出的excel文件路径
     """
-    import csv
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    with open(csv_path, 'r', encoding='utf-8') as f:
-        reader = csv.reader(f)
-        for row in reader:
-            ws.append(row)
-    width_auto_fit(ws)
-    use_style(ws)
-    # TODO 函数整理
-    wb.save('output.xlsx')
-    return 'output.xlsx'
+    try:
+        wb = openpyxl.Workbook()
+        ws = wb.active
+
+        with open(csv_path, 'r', encoding='utf-8') as f:
+            reader = csv.reader(f)
+            for row in reader:
+                ws.append(row)
+
+        width_auto_fit(ws)
+        use_style(ws)
+
+        wb.save(output_path)
+        return output_path
+
+    except Exception as e:
+        print(f"转换过程中出现错误：{e}")
+        return None
 
 
 def width_auto_fit(ws):
     """
     自动调整列宽
-    :return:
+    :param ws: 工作表
     """
     column_widths = {
         'B': 30,
@@ -68,79 +81,60 @@ def width_auto_fit(ws):
 def use_style(ws):
     """
     设置单元格样式
-    :return:
+    :param ws: 工作表
     """
-    from openpyxl.styles import alignment, Color, Font
     for column in ws.columns:
         for cell in column:
-            cell.alignment = alignment.Alignment(horizontal='general', vertical='center', wrap_text=True,
-                                                 shrink_to_fit=True)
+            cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True, shrink_to_fit=True)
 
     for cell in ws[1]:
         cell.font = Font(size=11, bold=True, color='FF0000')
 
 
-def split_letter_and_number(s):
+def split_letter_and_number(s: str):
     """
     将字母和数字组合的字符串拆分成行和列
-    :param s: "B12"
-    :return: letter, number eg: B, 12
+    :param s: 例如 "B12"
+    :return: letter, number 例如: B, 12
     """
-    pattern = r'(\D+)(\d+)'
-    match = re.match(pattern, s)
-    if match:
-        letter = match.group(1)  # 捕获组1：字母部分
-        number = match.group(2)  # 捕获组2：数字部分
-        return letter, number
-    else:
-        return None, None
+    match = re.match(r'(\D+)(\d+)', s)
+    return (match.group(1), match.group(2)) if match else (None, None)
 
 
-def get_row_column(string):
+def get_row_column(string: str) -> (int, int):
     """
     将字母和数字组合的字符串拆分成行和列
-    :param string: “B12”
-    :return: row, column eg: 12, 2
+    :param string: 例如 "B12"
+    :return: row, column 例如: 12, 2
     """
     char, row = split_letter_and_number(string)
-    column = 0
-    for index, letter in enumerate(char[::-1]):
-        offset = ord(letter.upper()) - ord('A') + 1
-        column += offset * pow(26, index)
+    column = sum((ord(letter.upper()) - ord('A') + 1) * (26 ** index) for index, letter in enumerate(char[::-1]))
     return int(row), column
 
 
-class ReadExcel(object):
+class ReadExcel:
     """
-    读取excel数据
+    读取excel数据的类
     """
 
-    def __init__(self, file_name, sheet_name=None, if_new_column=None):
-        """
-        这个是用例初始化读取对象的
-        :param file_name:  文件名字  -->  str
-        :param sheet_name: 表单名字  -->  str
-        """
-
+    def __init__(self, file_name: str, sheet_name: str = None, if_new_column: str = None):
         self.file_name = file_name
         self.if_new_column = if_new_column
         self.wb = openpyxl.load_workbook(self.file_name)
-        self.sheet_name = sheet_name if sheet_name is not None else self.wb.sheetnames[0]
-        self.wb: openpyxl.Workbook
-        dic = {
-            "sheet_list": self.sheet_lists,
-            "selected_sheet": self.selected_sheet,
-            "max_row": self.selected_sheet.max_row,
-            "max_column": self.selected_sheet.max_column
-        }
-        self.Sheet = SheetFoo(**dic)
-        print(self.Sheet)
+        self.sheet_name = sheet_name if sheet_name else self.wb.sheetnames[0]
+
+        self.Sheet = SheetFoo(
+            sheet_list=self.sheet_lists,
+            selected_sheet=self.selected_sheet,
+            max_row=self.selected_sheet.max_row,
+            max_column=self.selected_sheet.max_column
+        )
 
     def __del__(self):
         self.wb.close()
 
     @property
-    def sheet_lists(self):
+    def sheet_lists(self) -> List[str]:
         return self.wb.sheetnames
 
     @property
@@ -148,86 +142,75 @@ class ReadExcel(object):
         return self.wb[self.sheet_name]
 
     @selected_sheet.setter
-    def selected_sheet(self, sheet_name):
+    def selected_sheet(self, sheet_name: str):
         if sheet_name not in self.sheet_lists:
             print("表单不存在")
+            return
         self.sheet_name = sheet_name
         self.Sheet.selected_sheet = self.wb[sheet_name]
         self.Sheet.max_row, self.Sheet.max_column = self.max_row_column
 
     @property
-    def max_row_column(self):
+    def max_row_column(self) -> (int, int):
         return self.Sheet.selected_sheet.max_row, self.Sheet.selected_sheet.max_column
 
     @property
-    def latest_column_char(self):
+    def latest_column_char(self) -> str:
         return chr(self.Sheet.max_column + ord('A'))
 
     @property
-    def latest_row_num(self):
+    def latest_row_num(self) -> str:
         return str(self.Sheet.max_row + 1)
 
-    def w_data_origin(self, row, column, data):
+    def w_data_origin(self, row: int, column: int, data: Any):
         self.Sheet.selected_sheet.cell(row, column, data)
 
-    def w_data_char(self, string, data):
+    def w_data_char(self, string: str, data: Any):
         """
-        将字母和数字组合的字符串拆分成行和列，并写入数据
-        :param string: “B12”
+        根据列字母坐标写入数据
+        :param string: 例如 “B12”
         :param data: 数据
-        :return:
         """
         self.w_data_origin(*get_row_column(string), data)
 
     def save(self):
         self.wb.save(self.file_name)
 
-    def read_data_obj(self, sheet=None):
+    def read_data_obj(self, sheet: str = None) -> List[Case]:
         """
-        按行读取数据，表单所有数据
-        每个用例存储在一个对象中
-        注意：表格列头不能有纯数字，python无法以纯数字作为对象的属性名  也即obj.25  不可行
-        :return: 返回一个列表，列表中每个元素为一个用例对象
+        读取数据并返回用例对象列表
+        :param sheet: 可选的工作表名
+        :return: 包含用例对象的列表
         """
-        if sheet is not None:
+        if sheet:
             self.selected_sheet = sheet
-        # 按行获取数据转换成列表
+
         rows_data = list(self.Sheet.selected_sheet.rows)
-        # 获取表单的表头信息
-        titles = []
-        for title in rows_data[0]:
-            titles.append(title.value)
+        titles = [title.value for title in rows_data[0]]
         titles.append("max_column")
-        # 定义一个空列表用来存储所有的用例
-        if self.if_new_column is not None:
-            if self.if_new_column not in titles:
-                self.w_data_origin(1, self.Sheet.max_column + 1, self.if_new_column)
+
+        if self.if_new_column and self.if_new_column not in titles:
+            self.w_data_origin(1, self.Sheet.max_column + 1, self.if_new_column)
+
         cases = []
         for case in rows_data[1:]:
-            # 创建一个Cases类的对象，用来保存用例数据，
             case_obj = Case()
-            # data用例临时存放用例数据
-            data = []
-            # 判断该单元格是否为字符串类型，
-            for cell in case:
-                data.append(cell.value)
+            data = [cell.value for cell in case]
             data.append(len(case))
-            # 将该条数据放入cases中
             case_data = list(zip(titles, data))
-            for i in case_data:
-                if i[0] == self.if_new_column or i[0] is None:
+            for title, value in case_data:
+                if title == self.if_new_column or title is None:
                     continue
-                setattr(case_obj, str(i[0]), i[1])
+                setattr(case_obj, str(title), value)
             setattr(case_obj, 'row', case[0].row)
             cases.append(case_obj)
 
         return cases
 
-    def hide_column(self, column_name: str | list[str]):
+    def hide_column(self, column_name: str | List[str]):
         """
-        隐藏列
-        :param column_name: "A" | ["A", "B"]
-        :return:
+        隐藏指定的列
+        :param column_name: 列字母或字母列表
         """
         if isinstance(column_name, list):
             for column in column_name:
@@ -238,14 +221,7 @@ class ReadExcel(object):
 
 if __name__ == '__main__':
     r = ReadExcel("../SearchWords/SearchWords_v3.xlsx", sheet_name="July")
-    # time.sleep(2)
     r.selected_sheet = "Sheet1"
-    # print(r.Sheet)
-    # print(r.latest_column_char)
-    # print(r.latest_row_num)
     res = get_row_column('ZZ100')
     print(res)
-    # print(res := r.read_data_obj())
-    # r.hide_column(["A", "B"])
-    # r.hide_column("B")
     r.save()
