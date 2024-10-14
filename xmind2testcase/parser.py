@@ -11,8 +11,9 @@ config = {'sep': ' ',
           'ignore_char': '#!！'
           }
 """
-preconditions: xmind中的F4  备注信息  note
-summary:xmind中的批注信息   comment
+tag：            xmind中的标签信息   label
+preconditions:  xmind中的备注信息   note
+summary:        xmind中的批注信息   comment
 两者都要添加到topic里头，而非块上
 都可以做到父节点拼接子节点
 '3.6.0>'  会以' > '为拼接用例名的 sep
@@ -188,6 +189,7 @@ def get_priority(case_dict):
     if isinstance(case_dict['markers'], list):
         for marker in case_dict['markers']:
             if marker.startswith('priority'):
+                print(marker)
                 return int(marker[-1])
 
 
@@ -198,8 +200,8 @@ def gen_testcase_title(topics):
 
     # when separator is not blank, will add space around separator, e.g. '/' will be changed to ' / '
     separator = config['sep']
-    if separator != ' ':
-        separator = f' {separator} '
+    # if separator != ' ':
+    #     separator = f' {separator} '
     return separator.join(titles)
 
 

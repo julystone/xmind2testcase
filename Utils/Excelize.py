@@ -85,7 +85,8 @@ def use_style(ws):
     """
     for column in ws.columns:
         for cell in column:
-            cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True, shrink_to_fit=True)
+            # cell.alignment = Alignment(vertical='center', wrap_text=True, shrink_to_fit=True)
+            cell.alignment = Alignment(wrap_text=True, shrink_to_fit=True)
 
     for cell in ws[1]:
         cell.font = Font(size=11, bold=True, color='FF0000')

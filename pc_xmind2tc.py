@@ -9,6 +9,9 @@ from xmind2testcase.utils import get_xmind_testcase_list
 
 # TODO  Xmind8中的  summary怎么用上 - finish
 # TODO  Xmind8中的  link怎么用上
+# TODO  Xmind8，需要重复创建相似用例，怎么使用已有字段
+# TODO  Excelize.py文件函数整理
+# TODO  可支持字段的config配置项抽离
 
 def main():
     xmind_file = './tempFiles/testcases1.xmind'
