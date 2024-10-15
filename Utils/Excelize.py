@@ -33,13 +33,19 @@ class SheetFoo(BaseModel):
                 print(f"更新表格属性时出现错误：{e}")
 
 
-def csv_2_excel(csv_path: str, output_path: str = 'output.xlsx') -> str:
+def csv_2_excel(csv_path: str, output_path: str = 'output.xlsx', colum_widths=None, style_dict=None) -> str:
     """
     将csv文件转换为excel文件
     :param csv_path: 输入的csv文件路径
     :param output_path: 输出的excel文件路径，默认为 output.xlsx
+    :param colum_widths: 列宽字典，例如 {'A': 20, 'B': 30}
+    :param style_dict: 单元格样式字典
     :return: 输出的excel文件路径
     """
+    if style_dict is None:
+        style_dict = {}
+    if colum_widths is None:
+        colum_widths = {}
     try:
         wb = openpyxl.Workbook()
         ws = wb.active
@@ -49,47 +55,43 @@ def csv_2_excel(csv_path: str, output_path: str = 'output.xlsx') -> str:
             for row in reader:
                 ws.append(row)
 
-        width_auto_fit(ws)
-        use_style(ws)
+        width_auto_fit(ws, colum_widths)
+        use_style(ws, style_dict)
 
         wb.save(output_path)
         return output_path
 
     except Exception as e:
-        print(f"转换过程中出现错误：{e}")
-        return None
+        error_msg = f"转换过程中出现错误：{e}"
+        print(error_msg)
+        return error_msg
 
 
-def width_auto_fit(ws):
+def width_auto_fit(ws, column_widths):
     """
     自动调整列宽
     :param ws: 工作表
+    :param column_widths: 列宽字典
     """
-    column_widths = {
-        'B': 30,
-        'C': 10,
-        'E': 30,
-        'G': 50,
-        'H': 50,
-    }
 
     for col_letter, width in column_widths.items():
         col_dimension = ws.column_dimensions[col_letter]
         col_dimension.width = width
 
 
-def use_style(ws):
+def use_style(ws, style_dict: dict):
     """
     设置单元格样式
     :param ws: 工作表
+    :param style_dict: 单元格样式字典
     """
+
     for column in ws.columns:
         for cell in column:
-            # cell.alignment = Alignment(vertical='center', wrap_text=True, shrink_to_fit=True)
-            cell.alignment = Alignment(wrap_text=True, shrink_to_fit=True)
+            cell.alignment = Alignment(**style_dict['alignment'])
 
     for cell in ws[1]:
-        cell.font = Font(size=11, bold=True, color='FF0000')
+        cell.font = Font(**style_dict['font'])
 
 
 def split_letter_and_number(s: str):

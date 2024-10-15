@@ -41,8 +41,33 @@ def xmind_to_zentao_csv_file(xmind_file):
 
 
 def csv_2_metersphere(csv_file):
+    column_widths = {
+        'B': 30,
+        'C': 10,
+        'E': 30,
+        'G': 50,
+        'H': 50,
+    }
+
+    style_dict = {
+        'font':
+            {
+                'font_size': 11,
+                'font_color': 'FF0000',
+                'bold': True,
+                'align': 'center',
+                'valign': 'vcenter',
+            },
+        'alignment':
+            {
+                'wrap_text': True,
+                'shrink_to_fit': True
+            }
+
+    }
     from Utils.Excelize import csv_2_excel, ReadExcel
-    out = csv_2_excel(csv_file)
+    output_file = csv_file[:-4] + '.xlsx'
+    out = csv_2_excel(csv_file, output_file, column_widths, style_dict)
     po = ReadExcel(out)
     po.hide_column(['A', 'D', 'F', 'I', 'L', 'K'])
     po.save()
