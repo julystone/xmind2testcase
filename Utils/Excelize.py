@@ -46,25 +46,25 @@ def csv_2_excel(csv_path: str, output_path: str = 'output.xlsx', colum_widths=No
         style_dict = {}
     if colum_widths is None:
         colum_widths = {}
-    try:
-        wb = openpyxl.Workbook()
-        ws = wb.active
+    # try:
+    wb = openpyxl.Workbook()
+    ws = wb.active
 
-        with open(csv_path, 'r', encoding='utf-8') as f:
-            reader = csv.reader(f)
-            for row in reader:
-                ws.append(row)
+    with open(csv_path, 'r', encoding='utf-8') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            ws.append(row)
 
-        width_auto_fit(ws, colum_widths)
-        use_style(ws, style_dict)
+    width_auto_fit(ws, colum_widths)
+    use_style(ws, style_dict)
 
-        wb.save(output_path)
-        return output_path
+    wb.save(output_path)
+    return output_path
 
-    except Exception as e:
-        error_msg = f"转换过程中出现错误：{e}"
-        print(error_msg)
-        return error_msg
+    # except Exception as e:
+    #     error_msg = f"转换过程中出现错误：{e}"
+    #     print(error_msg)
+    #     return error_msg
 
 
 def width_auto_fit(ws, column_widths):
@@ -91,7 +91,9 @@ def use_style(ws, style_dict: dict):
             cell.alignment = Alignment(**style_dict['alignment'])
 
     for cell in ws[1]:
-        cell.font = Font(**style_dict['font'])
+        # cell.font = Font(**style_dict['font'])
+        cell.font = Font(size=style_dict['font']['font_size'], bold=style_dict['font']['bold'],
+                         color=style_dict['font']['font_color'])
 
 
 def split_letter_and_number(s: str):

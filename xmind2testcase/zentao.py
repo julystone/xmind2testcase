@@ -20,7 +20,7 @@ def xmind_to_zentao_csv_file(xmind_file):
 
     fileheader = ["ID", "用例名称", "所属模块", "标签", "前置条件", "备注", "步骤描述", "预期结果", "编辑模式",
                   "用例等级",
-                  "责任人", "用例状态"]
+                  "责任人", "用例状态", "excution_type"]
     zentao_testcase_rows = [fileheader]
     for testcase in testcases:
         row = gen_a_testcase_row(testcase)
@@ -75,13 +75,18 @@ def csv_2_metersphere(csv_file):
 
 def gen_a_testcase_row(testcase_dict):
     """
+    TODO api未使用字段：
+    "summary": "外层备注\n----\n内层备注",
+    "script_type": 1,
+    "execution_type": 1,   F3内容
+    "estimated_exec_duration": 3,
     {
         "name": "设置相关 - 默认值：旧版",
         "product": "3.7.0",
         "suite": "证券风格"
         "version": 1,
         "summary": "外层备注\n----\n内层备注",
-        "preconditions": "外层前置条件\n----\n内层前置条件",
+        "preconditions": "1. 外层前置条件\n2. 内层前置条件",
         "execution_type": 1,
         "importance": 2,
         "estimated_exec_duration": 3,
@@ -90,15 +95,15 @@ def gen_a_testcase_row(testcase_dict):
         "steps": [
             {
                 "step_number": 1,
-                "actions": "进入设置界面",
-                "expectedresults": "",
+                "actions": "尝试上下滑动界面",
+                "expected_results": "画线预警不跟随界面上下变化",
                 "execution_type": 1,
                 "result": 0
             },
             {
                 "step_number": 2,
-                "actions": "观察证券风格设置开关",
-                "expectedresults": "默认旧版风格",
+                "actions": "尝试左右滑动切换合约",
+                "expected_results": "画线预警不跟随界面左右变化",
                 "execution_type": 1,
                 "result": 0
             }
@@ -118,7 +123,7 @@ def gen_a_testcase_row(testcase_dict):
     case_status = 'Prepare'
     case_execution_type = gen_case_execution_type(testcase_dict['execution_type'])
     row = [case_id, case_title, case_module, case_tag, case_preconditions, case_note, case_step, case_expected_result,
-           case_edit_type, case_priority, case_owner, case_status]
+           case_edit_type, case_priority, case_owner, case_status, case_execution_type]
     return row
 
 
@@ -131,10 +136,10 @@ def gen_case_step_and_expected_result(steps):
     case_expected_result = ''
 
     for step_dict in steps:
-        case_step += str(step_dict['step_number']) + '. ' + step_dict['actions'].replace('\n', '').strip() + '\n'
+        case_step += f"{str(step_dict['step_number'])}. {step_dict['actions'].replace('\n', '').strip()}\n"
         case_expected_result += str(step_dict['step_number']) + '. ' + \
-                                step_dict['expectedresults'].replace('\n', '').strip() + '\n' \
-            if step_dict.get('expectedresults', '') else ''
+                                step_dict['expected_results'].replace('\n', '').strip() + '\n' \
+            if step_dict.get('expected_results', '') else ''
     # 去除最后的空行
     case_step = case_step[:-1]
     case_expected_result = case_expected_result[:-1]
@@ -151,6 +156,7 @@ def gen_case_priority(priority):
 
 
 def gen_case_execution_type(case_type):
+    return case_type
     mapping = {1: 'manual', 2: 'automatic'}
     if case_type in mapping.keys():
         return mapping[case_type]

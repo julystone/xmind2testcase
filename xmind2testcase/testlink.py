@@ -42,18 +42,18 @@ def testsuites_to_xml_content(testsuites):
     """Convert the testsuites to testlink xml file format"""
     root_element = Element(const.TAG_TESTSUITE)
     # setting the root suite's name attribute, that will generate a new testsuite folder on testlink
-    # root_element.set(const.ATTR_NMAE, testsuite.name)
+    # root_element.set(const.ATTR_NAME, testsuite.name)
 
     for testsuite in testsuites:
         suite_element = SubElement(root_element, const.TAG_TESTSUITE)
-        suite_element.set(const.ATTR_NMAE, testsuite.name)
+        suite_element.set(const.ATTR_NAME, testsuite.name)
         gen_text_element(suite_element, const.TAG_DETAILS, testsuite.details)
 
         for sub_suite in testsuite.sub_suites:
             if is_should_skip(sub_suite.name):
                 continue
             sub_suite_element = SubElement(suite_element, const.TAG_TESTSUITE)
-            sub_suite_element.set(const.ATTR_NMAE, sub_suite.name)
+            sub_suite_element.set(const.ATTR_NAME, sub_suite.name)
             gen_text_element(sub_suite_element, const.TAG_DETAILS, sub_suite.details)
             gen_testcase_element(sub_suite_element, sub_suite)
 
@@ -70,7 +70,7 @@ def gen_testcase_element(suite_element, suite):
             continue
 
         testcase_elment = SubElement(suite_element, const.TAG_TESTCASE)
-        testcase_elment.set(const.ATTR_NMAE, testcase.name)
+        testcase_elment.set(const.ATTR_NAME, testcase.name)
 
         gen_text_element(testcase_elment, const.TAG_VERSION, str(testcase.version))
         gen_text_element(testcase_elment, const.TAG_SUMMARY, testcase.summary)
@@ -99,7 +99,7 @@ def gen_steps_element(testcase_element, testcase):
             step_element = SubElement(steps_element, const.TAG_STEP)
             gen_text_element(step_element, const.TAG_STEP_NUMBER, str(step.step_number))
             gen_text_element(step_element, const.TAG_ACTIONS, step.actions)
-            gen_text_element(step_element, const.TAG_EXPECTEDRESULTS, step.expectedresults)
+            gen_text_element(step_element, const.TAG_EXPECTED_RESULTS, step.expected_results)
             gen_text_element(step_element, const.TAG_EXECUTION_TYPE, _convert_execution_type(step.execution_type))
 
 

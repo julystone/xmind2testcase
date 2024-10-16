@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # _*_ coding:utf-8 _*_
-
+import json
 import logging
 from xmind2testcase.metadata import TestSuite, TestCase, TestStep
 
 config = {'sep': ' ',
           'valid_sep': '&>+/-',
-          'precondition_sep': '\n----\n',
+          'precondition_sep': '\n',
           'summary_sep': '\n----\n',
           'ignore_char': '#!！'
           }
@@ -18,6 +18,8 @@ summary:        xmind中的批注信息   comment
 都可以做到父节点拼接子节点
 '3.6.0>'  会以' > '为拼接用例名的 sep
 """
+
+
 # Todo 为什么summary没有获得父节点的summary
 
 def xmind_to_testsuites(xmind_content_dict):
@@ -43,8 +45,8 @@ def xmind_to_testsuites(xmind_content_dict):
 
 
 def filter_empty_or_ignore_topic(topics):
-    """filter blank or start with config.ignore_char topic"""
-    result = [topic for topic in topics if not(
+    """Filter blank or start with config.ignore_char topic"""
+    result = [topic for topic in topics if not (
             topic['title'] is None or
             topic['title'].strip() == '' or
             topic['title'][0] in config['ignore_char'])]
@@ -137,20 +139,20 @@ def parse_a_testcase(case_dict, parent):
     testcase = TestCase()
     topics = parent + [case_dict] if parent else [case_dict]
 
-    testcase.name = gen_testcase_title(topics)
+    summary, parm_dict = gen_testcase_summary(topics)
+    testcase.summary = summary if summary else '无'
+    testcase.name = gen_testcase_title(topics).format(**parm_dict)
 
-    preconditions = gen_testcase_preconditions(topics)
+    preconditions = gen_testcase_preconditions(topics).format(**parm_dict)
     testcase.preconditions = preconditions if preconditions else '无'
 
-    summary = gen_testcase_summary(topics)
-    testcase.summary = summary if summary else '无'
     testcase.execution_type = get_execution_type(topics)
     testcase.importance = get_priority(case_dict) or 2
 
     step_dict_list = case_dict.get('topics', [])
     if step_dict_list:
         testcase.steps = parse_test_steps(step_dict_list)
-    print(testcase.steps)
+    # print(testcase.steps)
 
     # the result of the testcase take precedence over the result of the teststep
     testcase.result = get_test_result(case_dict['markers'])
@@ -165,6 +167,11 @@ def parse_a_testcase(case_dict, parent):
                 break
 
             testcase.result = step.result  # there is no need to judge where test step are ignored
+
+    if testcase.steps:
+        for step in testcase.steps:
+            step.actions = step.actions.format(**parm_dict)
+            step.expected_results = step.expected_results.format(**parm_dict)
 
     logging.debug('finds a testcase: %s', testcase.to_dict())
     return testcase
@@ -181,7 +188,7 @@ def get_execution_type(topics):
         if item.lower() in ['手动', '手工', 'manual']:
             exe_type = 1
             break
-    return exe_type
+    return labels
 
 
 def get_priority(case_dict):
@@ -189,7 +196,6 @@ def get_priority(case_dict):
     if isinstance(case_dict['markers'], list):
         for marker in case_dict['markers']:
             if marker.startswith('priority'):
-                print(marker)
                 return int(marker[-1])
 
 
@@ -198,7 +204,6 @@ def gen_testcase_title(topics):
     titles = [topic['title'] for topic in topics]
     titles = filter_empty_or_ignore_element(titles)
 
-    # when separator is not blank, will add space around separator, e.g. '/' will be changed to ' / '
     separator = config['sep']
     # if separator != ' ':
     #     separator = f' {separator} '
@@ -206,15 +211,27 @@ def gen_testcase_title(topics):
 
 
 def gen_testcase_preconditions(topics):
-    notes = [topic['note'] for topic in topics]
-    notes = filter_empty_or_ignore_element(notes)
-    return config['precondition_sep'].join(notes)
+    try:
+        # 过滤空或被忽略的备注信息
+        notes = filter_empty_or_ignore_element([topic.get('note', '') for topic in topics])
+
+        # 使用列表推导式生成预条件字符串
+        pre_all = [f'{pre_num}. {pre_note}' for pre_num, pre_note in enumerate(notes, 1)]
+
+        # 返回连接后的预条件字符串
+        return config['precondition_sep'].join(pre_all) if pre_all else '无'
+    except Exception as e:
+        logging.error(f'生成预条件时发生错误: {e}')
+        return '生成预条件时出错'
 
 
 def gen_testcase_summary(topics):
     comments = [topic['comment'] for topic in topics]
     comments = filter_empty_or_ignore_element(comments)
-    return config['summary_sep'].join(comments)
+    parm_dict = {}
+    if comments:
+        parm_dict = json.loads(comments[0])
+    return config['summary_sep'].join(comments), parm_dict
 
 
 def parse_test_steps(step_dict_list):
@@ -234,7 +251,7 @@ def parse_a_test_step(step_dict):
     expected_topics = step_dict.get('topics', [])
     if expected_topics:  # have expected result
         expected_topic = expected_topics[0]
-        test_step.expectedresults = expected_topic['title']  # one test step action, one test expected result
+        test_step.expected_results = expected_topic['title']  # one test step action, one test expected result
         markers = expected_topic['markers']
         test_step.result = get_test_result(markers)
     else:  # only have test step
@@ -262,11 +279,3 @@ def get_test_result(markers):
         result = 0
 
     return result
-
-
-
-
-
-
-
-

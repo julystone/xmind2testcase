@@ -95,18 +95,18 @@ class TestCase(object):
 
 class TestStep(object):
 
-    def __init__(self, step_number=1, actions='', expectedresults='', execution_type=1, result=0):
+    def __init__(self, step_number=1, actions='', expected_results='', execution_type=1, result=0):
         """
         TestStep
         :param step_number: test step number
         :param actions: test step actions
-        :param expectedresults: test step expected results
+        :param expected_results: test step expected results
         :param execution_type: test step execution type
         :param result: non-execution:0, pass:1, failed:2, blocked:3, skipped:4
         """
         self.step_number = step_number
         self.actions = actions
-        self.expectedresults = expectedresults
+        self.expected_results = expected_results
         self.execution_type = execution_type  # TODO(devin): get execution type content
         self.result = result
 
@@ -114,7 +114,7 @@ class TestStep(object):
         data = {
             'step_number': self.step_number,
             'actions': self.actions,
-            'expectedresults': self.expectedresults,
+            'expected_results': self.expected_results,
             'execution_type': self.execution_type,
             'result': self.result
         }
