@@ -33,11 +33,13 @@ class SheetFoo(BaseModel):
                 print(f"更新表格属性时出现错误：{e}")
 
 
-def csv_2_excel(csv_path: str, output_path: str = 'output.xlsx', colum_widths=None, style_dict=None) -> str:
+def csv_2_excel(csv_path: str, output_path: str = 'output.xlsx', hide_columns=None, colum_widths=None,
+                style_dict=None) -> str:
     """
     将csv文件转换为excel文件
     :param csv_path: 输入的csv文件路径
     :param output_path: 输出的excel文件路径，默认为 output.xlsx
+    :param hide_columns: 隐藏的列名列表
     :param colum_widths: 列宽字典，例如 {'A': 20, 'B': 30}
     :param style_dict: 单元格样式字典
     :return: 输出的excel文件路径
@@ -57,6 +59,7 @@ def csv_2_excel(csv_path: str, output_path: str = 'output.xlsx', colum_widths=No
 
     width_auto_fit(ws, colum_widths)
     use_style(ws, style_dict)
+    column_hide(ws, hide_columns)
 
     wb.save(output_path)
     return output_path
@@ -67,7 +70,20 @@ def csv_2_excel(csv_path: str, output_path: str = 'output.xlsx', colum_widths=No
     #     return error_msg
 
 
-def width_auto_fit(ws, column_widths):
+def column_hide(ws, column_name: str | List[str]):
+    """
+    隐藏指定的列
+    :param ws: 工作表
+    :param column_name: 列字母或字母列表
+    """
+    if isinstance(column_name, list):
+        for column in column_name:
+            ws.column_dimensions.group(column, hidden=True)
+    else:
+        ws.column_dimensions.group(column_name, hidden=True)
+
+
+def width_auto_fit(ws, column_widths: dict):
     """
     自动调整列宽
     :param ws: 工作表

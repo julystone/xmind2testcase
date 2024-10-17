@@ -4,6 +4,7 @@ import csv
 import logging
 import os
 from xmind2testcase.utils import get_xmind_testcase_list, get_absolute_path
+from Utils.Excelize import csv_2_excel
 
 """
 Convert XMind fie to Zentao testcase csv file 
@@ -18,19 +19,17 @@ def xmind_to_zentao_csv_file(xmind_file):
     logging.info('Start converting XMind file(%s) to zentao file...', xmind_file)
     testcases = get_xmind_testcase_list(xmind_file)
 
-    fileheader = ["ID", "用例名称", "所属模块", "标签", "前置条件", "备注", "步骤描述", "预期结果", "编辑模式",
-                  "用例等级",
-                  "责任人", "用例状态", "excution_type"]
-    zentao_testcase_rows = [fileheader]
+    file_header = ["ID", "用例名称", "所属模块", "标签", "前置条件", "备注", "步骤描述", "预期结果", "编辑模式",
+                   "用例等级",
+                   "责任人", "用例状态", "test"]
+    zentao_testcase_rows = [file_header]
     for testcase in testcases:
-        row = gen_a_testcase_row(testcase)
+        row = gen_a_testcase_row(testcase, file_header)
         zentao_testcase_rows.append(row)
 
     zentao_file = xmind_file[:-6] + '.csv'
     if os.path.exists(zentao_file):
         os.remove(zentao_file)
-        # logging.info('The zentao csv file already exists, return it directly: %s', zentao_file)
-        # return zentao_file
 
     with open(zentao_file, 'w', encoding='utf8', newline='') as f:
         writer = csv.writer(f)
@@ -41,6 +40,7 @@ def xmind_to_zentao_csv_file(xmind_file):
 
 
 def csv_2_metersphere(csv_file):
+    hide_columns = ['A', 'D', 'F', 'I', 'L', 'K']
     column_widths = {
         'B': 30,
         'C': 10,
@@ -48,7 +48,6 @@ def csv_2_metersphere(csv_file):
         'G': 50,
         'H': 50,
     }
-
     style_dict = {
         'font':
             {
@@ -65,66 +64,36 @@ def csv_2_metersphere(csv_file):
             }
 
     }
-    from Utils.Excelize import csv_2_excel, ReadExcel
-    output_file = csv_file[:-4] + '.xlsx'
-    out = csv_2_excel(csv_file, output_file, column_widths, style_dict)
-    po = ReadExcel(out)
-    po.hide_column(['A', 'D', 'F', 'I', 'L', 'K'])
-    po.save()
+
+    excel_file_name = csv_file[:-4] + '.xlsx'
+    csv_2_excel(csv_file, excel_file_name, hide_columns, column_widths, style_dict)
 
 
-def gen_a_testcase_row(testcase_dict):
-    """
-    TODO api未使用字段：
-    "summary": "外层备注\n----\n内层备注",
-    "script_type": 1,
-    "execution_type": 1,   F3内容
-    "estimated_exec_duration": 3,
-    {
-        "name": "设置相关 - 默认值：旧版",
-        "product": "3.7.0",
-        "suite": "证券风格"
-        "version": 1,
-        "summary": "外层备注\n----\n内层备注",
-        "preconditions": "1. 外层前置条件\n2. 内层前置条件",
-        "execution_type": 1,
-        "importance": 2,
-        "estimated_exec_duration": 3,
-        "status": 7,
-        "result": 0,
-        "steps": [
-            {
-                "step_number": 1,
-                "actions": "尝试上下滑动界面",
-                "expected_results": "画线预警不跟随界面上下变化",
-                "execution_type": 1,
-                "result": 0
-            },
-            {
-                "step_number": 2,
-                "actions": "尝试左右滑动切换合约",
-                "expected_results": "画线预警不跟随界面左右变化",
-                "execution_type": 1,
-                "result": 0
-            }
-        ],
-    },
-    """
-    case_id = ""
-    case_title = testcase_dict['name']
-    case_module = gen_case_module(testcase_dict['product'], testcase_dict['suite'])
-    case_tag = ''
-    case_preconditions = testcase_dict['preconditions']  # 前置条件
-    case_note = testcase_dict['summary']  # 备注
+def gen_a_testcase_row(testcase_dict, file_header):
     case_step, case_expected_result = gen_case_step_and_expected_result(testcase_dict['steps'])
-    case_edit_type = 'STEP'
-    case_priority = gen_case_priority(testcase_dict['importance'])
-    case_owner = 'july'
-    case_status = 'Prepare'
-    case_execution_type = gen_case_execution_type(testcase_dict['execution_type'])
-    row = [case_id, case_title, case_module, case_tag, case_preconditions, case_note, case_step, case_expected_result,
-           case_edit_type, case_priority, case_owner, case_status, case_execution_type]
+
+    mapping = {"ID": '',
+               "用例名称": testcase_dict['name'],
+               "所属模块": gen_case_module(testcase_dict['product'], testcase_dict['suite']),
+               "标签": '',
+               "前置条件": testcase_dict['preconditions'],
+               "备注": testcase_dict['summary'],
+               "步骤描述": case_step,
+               "预期结果": case_expected_result,
+               "编辑模式": 'STEP',
+               "用例等级": gen_case_priority(testcase_dict['importance']),
+               "责任人": 'july',
+               "用例状态": 'Prepare',
+               "执行类型": gen_case_execution_type(testcase_dict['execution_type'])
+               }
+    row = []
+    for case_key in file_header:
+        try:
+            row.append(mapping[case_key])
+        except KeyError:
+            row.append('未定义此列头内容')
     return row
+
 
 
 def gen_case_module(product_name, module_name):

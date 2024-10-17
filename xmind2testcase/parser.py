@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # _*_ coding:utf-8 _*_
+import itertools
 import json
 import logging
 from xmind2testcase.metadata import TestSuite, TestCase, TestStep
@@ -99,7 +100,7 @@ def parse_testsuite(suite_dict):
 
     for cases_dict in suite_dict.get('topics', []):
         for case in recurse_parse_testcase(cases_dict):
-            testsuite.testcase_list.append(case)
+            testsuite.testcase_list.append(case)  # 此处将解析的测试用例添加到testsuite的testcase_list中
 
     logging.debug('testsuite(%s) parsing complete: %s', testsuite.name, testsuite.to_dict())
     return testsuite
@@ -107,6 +108,17 @@ def parse_testsuite(suite_dict):
 
 def recurse_parse_testcase(case_dict, parent=None):
     if is_testcase_topic(case_dict):
+        if parm := is_testcase_parmed(case_dict):
+            for combie in gen_orth_com(*(parm.values())):
+                # 将case_dict里面对应parm的值，替换为combie，生成新的case_dict
+                parm_map = {k: v for k, v in zip(parm.keys(), combie)}
+                print(parm_map)
+                case_dict['title'] = case_dict['title'].format(**parm_map)
+                # case_dict['comment'] = json.dumps(parm_map)
+                # 然后调用parse_a_testcase生成测试用例
+                # case_dict['comment'] = json.dumps(dict(zip(parm.keys(), combie)))
+                case = parse_a_testcase(case_dict, parent)
+                return case
         case = parse_a_testcase(case_dict, parent)
         yield case
     else:
@@ -135,15 +147,39 @@ def is_testcase_topic(case_dict):
     return True
 
 
+def is_testcase_parmed(case_dict):
+    summary = case_dict.get('comment', '')
+    if summary:
+        parm = json.loads(summary)
+        print(parm)
+        return parm
+    return False
+
+
+def gen_orth_com(*args):
+    """
+    生成多个输入参数的正交组合
+    :param args: 每个参数的可能取值，输入形式为：参数1取值, 参数2取值, ...
+    :return: 所有可能的组合
+    """
+    # 使用 itertools.product 生成笛卡尔积
+    print(args)
+    combinations = list(itertools.product(*args))
+    for idx, combo in enumerate(combinations):
+        print(f"组合 {idx + 1}: {combo}")
+    return combinations
+
+
 def parse_a_testcase(case_dict, parent):
     testcase = TestCase()
     topics = parent + [case_dict] if parent else [case_dict]
 
     summary, parm_dict = gen_testcase_summary(topics)
     testcase.summary = summary if summary else '无'
-    testcase.name = gen_testcase_title(topics).format(**parm_dict)
+    testcase.name = gen_testcase_title(topics)
+    # expand_summary_parms(testcase.name, parm_dict)
 
-    preconditions = gen_testcase_preconditions(topics).format(**parm_dict)
+    preconditions = gen_testcase_preconditions(topics)
     testcase.preconditions = preconditions if preconditions else '无'
 
     testcase.execution_type = get_execution_type(topics)
@@ -170,8 +206,8 @@ def parse_a_testcase(case_dict, parent):
 
     if testcase.steps:
         for step in testcase.steps:
-            step.actions = step.actions.format(**parm_dict)
-            step.expected_results = step.expected_results.format(**parm_dict)
+            step.actions = step.actions
+            step.expected_results = step.expected_results
 
     logging.debug('finds a testcase: %s', testcase.to_dict())
     return testcase
