@@ -21,7 +21,7 @@ def xmind_to_zentao_csv_file(xmind_file):
 
     file_header = ["ID", "用例名称", "所属模块", "标签", "前置条件", "备注", "步骤描述", "预期结果", "编辑模式",
                    "用例等级",
-                   "责任人", "用例状态", "test"]
+                   "责任人", "用例状态"]
     zentao_testcase_rows = [file_header]
     for testcase in testcases:
         row = gen_a_testcase_row(testcase, file_header)

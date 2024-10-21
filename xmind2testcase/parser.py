@@ -243,7 +243,16 @@ def gen_testcase_title(topics):
     separator = config['sep']
     # if separator != ' ':
     #     separator = f' {separator} '
-    return separator.join(titles)
+    # 只保留titles最后两级的标题
+    return separator.join(title_trim(titles))
+
+
+def title_trim(title):
+    """trim topic title to last two levels"""
+    if len(title) >= 2:
+        return title[-2:]
+    else:
+        return title
 
 
 def gen_testcase_preconditions(topics):
