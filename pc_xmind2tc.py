@@ -3,6 +3,8 @@
 
 import json
 import xmind
+from icecream import ic
+
 from xmind2testcase.zentao import xmind_to_zentao_csv_file, csv_2_metersphere
 from xmind2testcase.utils import get_xmind_testcase_list
 
@@ -22,7 +24,7 @@ def main():
     print('Convert XMind file to zentao csv file successfully: %s' % zentao_csv_file)
 
     testcases = get_xmind_testcase_list(xmind_file)
-    print(testcases)
+    ic(testcases)
 
 
 if __name__ == '__main__':
