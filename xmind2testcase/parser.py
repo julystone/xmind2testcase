@@ -3,6 +3,9 @@
 import itertools
 import json
 import logging
+
+from icecream import ic
+
 from xmind2testcase.metadata import TestSuite, TestCase, TestStep
 
 config = {'sep': ' ',
@@ -149,9 +152,12 @@ def is_testcase_topic(case_dict):
 
 def is_testcase_parmed(case_dict):
     summary = case_dict.get('comment', '')
+    ic(summary)
     if summary:
-        parm = json.loads(summary)
-        print(parm)
+        try:
+            parm = json.loads(summary)
+        except json.JSONDecodeError:
+            return False
         return parm
     return False
 
@@ -275,7 +281,10 @@ def gen_testcase_summary(topics):
     comments = filter_empty_or_ignore_element(comments)
     parm_dict = {}
     if comments:
-        parm_dict = json.loads(comments[0])
+        try:
+            parm_dict = json.loads(comments[0])
+        except json.JSONDecodeError:
+            logging.warning(f'测试用例的注释信息格式错误: {comments[0]}')
     return config['summary_sep'].join(comments), parm_dict
 
 
