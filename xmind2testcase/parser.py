@@ -152,7 +152,6 @@ def is_testcase_topic(case_dict):
 
 def is_testcase_parmed(case_dict):
     summary = case_dict.get('comment', '')
-    ic(summary)
     if summary:
         try:
             parm = json.loads(summary)

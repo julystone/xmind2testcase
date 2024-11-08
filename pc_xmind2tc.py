@@ -16,7 +16,7 @@ from xmind2testcase.utils import get_xmind_testcase_list
 # TODO  可支持字段的config配置项抽离
 
 def main():
-    xmind_file = './tempFiles/testcases_template.xmind'
+    xmind_file = './tempFiles/testcases1.xmind'
     print('Start to convert XMind file: %s' % xmind_file)
 
     zentao_csv_file = xmind_to_zentao_csv_file(xmind_file)
@@ -24,7 +24,6 @@ def main():
     print('Convert XMind file to zentao csv file successfully: %s' % zentao_csv_file)
 
     testcases = get_xmind_testcase_list(xmind_file)
-    ic(testcases)
 
 
 if __name__ == '__main__':
