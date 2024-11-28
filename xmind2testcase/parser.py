@@ -300,7 +300,6 @@ def parse_test_steps(step_dict_list):
 def parse_a_test_step(step_dict):
     test_step = TestStep()
     test_step.actions = step_dict['title']
-
     expected_topics = step_dict.get('topics', [])
     if expected_topics:  # have expected result
         expected_topic = expected_topics[0]
@@ -308,6 +307,7 @@ def parse_a_test_step(step_dict):
         markers = expected_topic['markers']
         test_step.result = get_test_result(markers)
     else:  # only have test step
+        test_step.expected_results = "_"
         markers = step_dict['markers']
         test_step.result = get_test_result(markers)
 

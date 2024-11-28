@@ -14,6 +14,7 @@ from xmind2testcase.utils import get_xmind_testcase_list
 # TODO  Xmind8，需要重复创建相似用例，怎么使用已有字段
 # TODO  Excelize.py文件函数整理 - finish
 # TODO  可支持字段的config配置项抽离
+# TODO  增加测试用例单个更新功能
 
 def main():
     xmind_file = './tempFiles/testcases1.xmind'
