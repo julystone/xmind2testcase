@@ -17,7 +17,7 @@ from xmind2testcase.utils import get_xmind_testcase_list
 # TODO  增加测试用例单个更新功能
 
 def main():
-    xmind_file = './tempFiles/testcases1.xmind'
+    xmind_file = './tempFiles/testcases_new.xmind'
     print('Start to convert XMind file: %s' % xmind_file)
 
     zentao_csv_file = xmind_to_zentao_csv_file(xmind_file)
