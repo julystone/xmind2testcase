@@ -42,9 +42,9 @@ def xmind_to_zentao_csv_file(xmind_file):
 def csv_2_metersphere(csv_file):
     hide_columns = ['A', 'D', 'F', 'I', 'L', 'K']
     column_widths = {
-        'B': 30,
+        'B': 15,
         'C': 10,
-        'E': 30,
+        'E': 45,
         'G': 50,
         'H': 50,
     }
