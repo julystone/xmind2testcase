@@ -1,12 +1,13 @@
 # encoding: utf-8
 
 
-import json
-import xmind
-from icecream import ic
+import os
+import sys
 
-from xmind2testcase.zentao import xmind_to_zentao_csv_file, csv_2_metersphere
 from xmind2testcase.utils import get_xmind_testcase_list
+from xmind2testcase.zentao import xmind_to_zentao_csv_file, csv_2_metersphere
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 # TODO  Xmind8中的  summary怎么用上 - finish
